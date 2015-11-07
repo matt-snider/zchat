@@ -18,14 +18,15 @@ def run_chat_server(port):
     try:
         while True:
             user, cmd = socket.recv_multipart()
-            handle_command(user, cmd)
+            result = handle_command(user, cmd)
+            socket.send_multipart([user, result])
     except KeyboardInterrupt:
         exit('Closing server.')
 
 
 def handle_command(user, cmd):
     logger.debug("User<%s> sent command: %s" % (user, cmd))
-
+    return cmd
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
