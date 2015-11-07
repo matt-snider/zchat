@@ -4,7 +4,7 @@ import logging
 import zmq
 
 
-logging.basicConfig(format='%(asctime)-15 %(message)s')
+logging.basicConfig(format='%(asctime)-15s %(message)s')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -13,7 +13,7 @@ def run_chat_server(port):
     context = zmq.Context()
     socket = context.socket(zmq.ROUTER)
     socket.bind('tcp://*:%s' % port)
-    logger.info('Server started on port %s' % port)
+    logger.info('Server started on port %s', port)
 
     try:
         while True:
