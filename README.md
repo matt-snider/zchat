@@ -1,2 +1,2 @@
 # zchat
-A chat server and client built with ZMQ.
+A chat server and client built with Tornado and ZMQ.
