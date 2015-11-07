@@ -5,6 +5,7 @@ import zmq
 def run_chat_server(port):
     context = zmq.Context()
     socket = context.socket(zmq.ROUTER)
+    socket.bind('tcp://*:%s' % port)
 
     try:
         while True:
