@@ -5,7 +5,7 @@ import zmq
 def run_chat_client(user, hostname, port):
     context = zmq.Context()
     socket = context.socket(zmq.DEALER)
-    socket.identity = user.decode()
+    socket.identity = user.encode()
     socket.connect('tcp://{}:{}'.format(hostname, port))
 
     print('Please enter a command...')
