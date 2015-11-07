@@ -6,7 +6,13 @@ def run_chat_client(user, hostname, port):
     context = zmq.Context()
     socket = context.socket(zmq.DEALER)
     socket.identity = user.encode()
+
+    # Connect to the server, register, and print
+    # the welcome message response
     socket.connect('tcp://{}:{}'.format(hostname, port))
+    socket.send(b'REGISTER')
+    welcome = socket.recv_string()
+    print(welcome)
 
     print('Please enter a command...')
     try:
