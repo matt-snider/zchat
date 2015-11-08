@@ -12,14 +12,14 @@ class CommandRegistry:
     def register(cls, cmd):
         cls._commands[cmd.name] = cmd
 
-    def dispatch(self, cmd_string):
+    def dispatch(self, cmd_string, user=None):
         cmd_name, *args = cmd_string.split()
         try:
             command = self._commands[cmd_name.upper()]
             if self._client:
                 return command.execute_client(self._owner, *args)
             else:
-                return command.execute_server(self._owner, *args)
+                return command.execute_server(self._owner, user, *args)
         except TypeError:
             raise InvalidArgument(*args)
         except KeyError:
@@ -40,7 +40,7 @@ class Command(ABC):
 
     @classmethod
     @abstractmethod
-    def execute_server(cls, server, *args):
+    def execute_server(cls, server, user, *args):
         pass
 
     @classmethod
@@ -68,6 +68,6 @@ class Connect(Command):
         print(welcome)
 
     @classmethod
-    def execute_server(cls, server, nick):
-        print('%s connected' % nick)
-        server.socket.send_multipart([nick, 'Welcome!'])
+    def execute_server(cls, server, user):
+        print('%s connected' % user)
+        server.socket.send_multipart([user, 'Welcome!'])

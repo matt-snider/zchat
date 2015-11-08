@@ -29,9 +29,9 @@ class ZChatServer:
         self.socket.bind('tcp://*:{}'.format(self.port))
         logger.info('Server started on port %s', self.port)
         while True:
+            user, cmd = self.socket.recv_multipart()
             try:
-                user, cmd = self.socket.recv_multipart()
-                self.registry.dispatch(cmd.decode())
+                self.registry.dispatch(cmd.decode(), user)
             except (InvalidCommand, InvalidArgument):
                 logger.debug('Client<%s> sent invalid command: %s' % (user, cmd))
 
