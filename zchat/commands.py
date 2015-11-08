@@ -17,7 +17,7 @@ class CommandRegistry:
     def dispatch(self, cmd_string):
         try:
             cmd_name, *args = cmd_string.split()
-            command = self._commands[cmd_name]
+            command = self._commands[cmd_name.upper()]
             if self._client:
                 return command.execute_client(self._socket, *args)
             else:
