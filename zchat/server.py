@@ -24,6 +24,7 @@ class ZChatServer:
         self.socket = context.socket(zmq.ROUTER)
         self.port = port
         self.registry = CommandRegistry(self)
+        self.clients = []
 
     def start(self):
         self.socket.bind('tcp://*:{}'.format(self.port))
@@ -32,6 +33,7 @@ class ZChatServer:
             user, cmd = self.socket.recv_multipart()
             try:
                 self.registry.dispatch(cmd.decode(), user)
+                logger.debug('Server handled Client<%s> command: %s' % (user, cmd))
             except (InvalidCommand, InvalidArgument):
                 logger.debug('Client<%s> sent invalid command: %s' % (user, cmd))
 

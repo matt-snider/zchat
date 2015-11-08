@@ -70,4 +70,5 @@ class Connect(Command):
     @classmethod
     def execute_server(cls, server, user):
         print('%s connected' % user)
-        server.socket.send_multipart([user, 'Welcome!'])
+        server.socket.send_multipart([user, server.welcome])
+        server.clients.append(user)
