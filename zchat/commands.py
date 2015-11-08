@@ -43,3 +43,26 @@ class Command(ABC):
     @abstractmethod
     def execute_client(cls, socket, *args):
         pass
+
+
+@CommandRegistry.register
+class Connect(Command):
+    name = 'CONNECT'
+    client_help = """CONNECT
+    Connects to the server with the chosen handle/nickname.
+
+    Usage:
+        /connect <host> <nick>
+    """
+
+    @classmethod
+    def execute_client(cls, socket, host, nick):
+        socket.connect('tcp://{}'.format(host))
+        socket.send(b'CONNECT')
+        response = socket.recv_string()
+        print(response)
+
+    @classmethod
+    def execute_server(cls, socket, nick):
+        print('%s connected' % nick)
+        socket.send([nick, 'Welcome!'])
