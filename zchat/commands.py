@@ -63,12 +63,13 @@ class Connect(Command):
 
     @classmethod
     def execute_client(cls, socket, host, nick):
+        socket.identity = nick.encode()
         socket.connect('tcp://{}'.format(host))
         socket.send(b'CONNECT')
-        response = socket.recv_string()
-        print(response)
+        welcome = socket.recv_string()
+        print(welcome)
 
     @classmethod
     def execute_server(cls, socket, nick):
         print('%s connected' % nick)
-        socket.send([nick, 'Welcome!'])
+        socket.send_multipart([nick, 'Welcome!'])
