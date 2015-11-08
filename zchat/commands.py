@@ -1,19 +1,27 @@
 from abc import ABC, abstractmethod
 
 
-class Command(ABC):
+class CommandRegistry:
     _commands = {}
+
+    def __init__(self, type, socket):
+        if type not in ('client', 'server'):
+            raise ValueError("type must be 'client' or 'server'")
+        self._client = type == 'client'
+        self._socket = socket
 
     @classmethod
     def register(cls, cmd):
         cls._commands[cmd.name] = cmd
 
-    @classmethod
-    def dispatch(cls, cmd_string):
+    def dispatch(self, cmd_string):
         try:
             cmd_name, *args = cmd_string.split()
-            command = cls._commands[cmd_name]
-            return command.execute(*args)
+            command = self._commands[cmd_name]
+            if self._client:
+                return command.execute_client(self._socket, *args)
+            else:
+                return command.execute_server(self._socket, *args)
         except TypeError:
             # Invalid arguments passed
             pass
@@ -21,6 +29,17 @@ class Command(ABC):
             # Command does not exist
             pass
 
+
+class Command(ABC):
+    name = ''
+    client_help = ''
+
+    @classmethod
     @abstractmethod
-    def execute(self, *args):
+    def execute_server(cls, socket, *args):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def execute_client(cls, socket, *args):
         pass
