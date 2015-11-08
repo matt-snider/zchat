@@ -14,7 +14,9 @@ class CommandRegistry:
         cls._commands[cmd.name] = cmd
 
     def dispatch(self, cmd_string, user=None):
+        cmd_string, trailing_arg = cmd_string.split(' :')
         cmd_name, *args = cmd_string.split()
+        args.append(trailing_arg)
         try:
             command = self._commands[cmd_name.upper()]
             if self._client:
