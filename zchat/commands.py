@@ -1,3 +1,4 @@
+import json
 from abc import ABC, abstractmethod
 
 
@@ -71,4 +72,27 @@ class Connect(Command):
     def execute_server(cls, server, user):
         print('%s connected' % user)
         server.socket.send_multipart([user, server.welcome])
-        server.clients.append(user)
+        server.clients.append(user.decode())
+
+@CommandRegistry.register
+class Users(Command):
+    name = 'USERS'
+    client_help = """USERS
+    Lists the users on the current server
+    
+    Usage:
+        /users 
+    """
+
+    @classmethod
+    def execute_client(cls, client):
+        client.socket.send(b'USERS')
+        users = client.socket.recv_json()
+        print('Users:\n\t%s' % '\n\t'.join(users))
+
+    @classmethod
+    def execute_server(cls, server, user):
+        # this wqont work without addr!
+        user_list = json.dumps(server.clients).encode()
+        server.socket.send_multipart([user, user_list])
+
