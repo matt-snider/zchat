@@ -1,4 +1,6 @@
 import sys
+import shutil
+import textwrap
 import zmq
 
 from zchat.commands import CommandRegistry, InvalidCommand, InvalidArgument
@@ -8,10 +10,14 @@ context = zmq.Context()
 
 class ZChatClient:
     prompt = '>>> '
+    resp_prefix = '* '
 
     def __init__(self):
         self.socket = context.socket(zmq.DEALER)
         self.registry = CommandRegistry(self, is_client=True)
+        self._wrapper = textwrap.TextWrapper(replace_whitespace=False,
+                                             initial_indent=self.resp_prefix,
+                                             subsequent_indent=self.resp_prefix)
 
     def run(self):
         print('Please enter a command...')
@@ -22,6 +28,15 @@ class ZChatClient:
                 print("Invalid command -- type /help for more info")
             except InvalidArgument:
                 print('Invalid arguments to command')
+
+    def print_server_response(self, response):
+        width, _ = shutil.get_terminal_size()
+        self._wrapper.width = width - len(self.resp_prefix)
+        for line in response.splitlines():
+            if not line:
+                print(self.resp_prefix)
+            else:
+                print(self._wrapper.fill(line))
 
 
 if __name__ == '__main__':

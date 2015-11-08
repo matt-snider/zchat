@@ -66,13 +66,14 @@ class Connect(Command):
         client.socket.connect('tcp://{}'.format(host))
         client.socket.send(b'CONNECT')
         welcome = client.socket.recv_string()
-        print(welcome)
+        client.print_server_response(welcome)
 
     @classmethod
     def execute_server(cls, server, user):
         print('%s connected' % user)
         server.socket.send_multipart([user, server.welcome])
         server.clients.append(user.decode())
+
 
 @CommandRegistry.register
 class Users(Command):
@@ -88,7 +89,7 @@ class Users(Command):
     def execute_client(cls, client):
         client.socket.send(b'USERS')
         users = client.socket.recv_json()
-        print('Users:\n\t%s' % '\n\t'.join(users))
+        client.print_server_response('Users:\n\t%s' % '\n\t'.join(users))
 
     @classmethod
     def execute_server(cls, server, user):
