@@ -99,3 +99,29 @@ class Users(Command):
         user_list = json.dumps(server.clients).encode()
         server.socket.send_multipart([user, user_list])
 
+
+@CommandRegistry.register
+class Message(Command):
+    name = 'PRIVMSG'
+    client_help = """"PRIVMSG
+    Sends another user a private message.
+
+    Usage:
+        /privmsg <user> <message>
+    """
+    
+    # TODO: this would be much better with ZMQStream and on_recv()/on_send()
+    @classmethod
+    def execute_client(cls, client, target, msg):
+        me = client.socket.identity.decode()
+        print('<%s> %s' % (me, msg))
+        while True:
+            client.socket.send(b'PRIVMSG ' + target.encode() + ' :' + msg.encode())
+            response = client.socket.recv_string()
+            print('<%s> %s' % (target, response)) 
+            msg = input('<%s> '  % me)
+
+    @classmethod
+    def execute_server(cls, server, user, target, msg):
+        server.socket.send_multipart([target, msg.encode()])
+
