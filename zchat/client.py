@@ -19,17 +19,13 @@ class ZChatClient:
         print(welcome)
 
         print('Please enter a command...')
-        try:
-            while True:
-                cmd = self.parse_and_validate_command(input())
-                if not cmd:
-                    continue
-                self.socket.send(cmd.encode())
-                response = self.socket.recv_multipart()
-                print('Response: %s' % response)
-
-        except KeyboardInterrupt:
-            exit('Exiting zchat...')
+        while True:
+            cmd = self.parse_and_validate_command(input())
+            if not cmd:
+                continue
+            self.socket.send(cmd.encode())
+            response = self.socket.recv_multipart()
+            print('Response: %s' % response)
 
     def parse_and_validate_command(self, cmd):
         if not cmd.startswith('/'):
@@ -49,4 +45,7 @@ if __name__ == '__main__':
 
     user, hostname, port = sys.argv[1:]
     client = ZChatClient(user, hostname, port)
-    client.run()
+    try:
+        client.run()
+    except KeyboardInterrupt:
+        exit('Exiting zchat...')
