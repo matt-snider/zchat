@@ -1,48 +1,52 @@
 import sys
 import zmq
 
-commands = set()
-
-def run_chat_client(user, hostname, port):
-    context = zmq.Context()
-    socket = context.socket(zmq.DEALER)
-    socket.identity = user.encode()
-
-    # Connect to the server, register, and print
-    # the welcome message response
-    socket.connect('tcp://{}:{}'.format(hostname, port))
-    socket.send(b'REGISTER')
-    welcome = socket.recv_string()
-    print(welcome)
-
-    print('Please enter a command...')
-    try:
-        while True:
-            cmd = parse_and_validate_command(input())
-            if not cmd:
-                continue
-            socket.send(cmd.encode())
-            response = socket.recv_multipart()
-            print('Response: %s' % response)
-
-    except KeyboardInterrupt:
-        exit('Exiting zchat...')
+context = zmq.Context()
 
 
-def parse_and_validate_command(cmd):
-    if not cmd.startswith('/'):
-        print("Prefix commands with '/' -- type /help for more info")
-        return
+class ZChatClient:
 
-    cmd = cmd.strip('/')
-    if cmd not in commands:
-        print("Invalid command: '%s' -- type /help for a list of commands" % cmd)
-        return
-    return cmd
+    def __init__(self, user, hostname, port):
+        self.url = 'tcp://{}:{}'.format(hostname, port)
+        self.socket = context.socket(zmq.DEALER)
+        self.socket.identity = user.encode()
+        self.commands = set()
+
+    def run(self):
+        self.socket.connect(self.url)
+        self.socket.send(b'REGISTER')
+        welcome = self.socket.recv_string()
+        print(welcome)
+
+        print('Please enter a command...')
+        try:
+            while True:
+                cmd = self.parse_and_validate_command(input())
+                if not cmd:
+                    continue
+                self.socket.send(cmd.encode())
+                response = self.socket.recv_multipart()
+                print('Response: %s' % response)
+
+        except KeyboardInterrupt:
+            exit('Exiting zchat...')
+
+    def parse_and_validate_command(self, cmd):
+        if not cmd.startswith('/'):
+            print("Prefix commands with '/' -- type /help for more info")
+            return
+
+        cmd = cmd.strip('/')
+        if cmd not in self.commands:
+            print("Invalid command: '%s' -- type /help for a list of commands" % cmd)
+            return
+        return cmd
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
         exit('Usage: python -m zchat.client <user> <hostname> <port>')
 
     user, hostname, port = sys.argv[1:]
-    run_chat_client(user, hostname, port)
+    client = ZChatClient(user, hostname, port)
+    client.run()
