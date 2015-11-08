@@ -3,6 +3,8 @@ import logging
 
 import zmq
 
+from zchat.commands import CommandRegistry, InvalidCommand, InvalidArgument
+
 logging.basicConfig(format='%(asctime)-15s %(message)s')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -27,18 +29,11 @@ class ZChatServer:
         self.socket.bind('tcp://*:{}'.format(self.port))
         logger.info('Server started on port %s', self.port)
         while True:
-            user, cmd = self.socket.recv_multipart()
-            result = self.handle_command(user, cmd)
-            self.socket.send_multipart([user, result])
-
-    def handle_command(self, user, cmd):
-        logger.debug("User<%s> sent command: %s" % (user, cmd))
-        if cmd == b'REGISTER':
-            self.clients.append(user)
-            return self.welcome
-        else:
-            return cmd
-
+            try:
+                user, cmd = self.socket.recv_multipart()
+                self.registry.dispatch(cmd.decode())
+            except (InvalidCommand, InvalidArgument):
+                logger.debug('Client<%s> sent invalid command: %s' % (user, cmd))
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
