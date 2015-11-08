@@ -15,19 +15,25 @@ class CommandRegistry:
         cls._commands[cmd.name] = cmd
 
     def dispatch(self, cmd_string):
+        cmd_name, *args = cmd_string.split()
         try:
-            cmd_name, *args = cmd_string.split()
             command = self._commands[cmd_name.upper()]
             if self._client:
                 return command.execute_client(self._socket, *args)
             else:
                 return command.execute_server(self._socket, *args)
         except TypeError:
-            # Invalid arguments passed
-            pass
+            raise InvalidArgument(*args)
         except KeyError:
-            # Command does not exist
-            pass
+            raise InvalidCommand(cmd_name)
+
+
+class InvalidCommand(Exception):
+    pass
+
+
+class InvalidArgument(Exception):
+    pass
 
 
 class Command(ABC):

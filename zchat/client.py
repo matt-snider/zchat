@@ -1,7 +1,7 @@
 import sys
 import zmq
 
-from zchat.commands import CommandRegistry
+from zchat.commands import CommandRegistry, InvalidCommand, InvalidArgument
 
 context = zmq.Context()
 
@@ -17,8 +17,10 @@ class ZChatClient:
         while True:
             try:
                 self.registry.dispatch(input())
-            except:
+            except InvalidCommand:
                 print("Invalid command -- type /help for more info")
+            except InvalidArgument:
+                print('Invalid arguments to command')
 
 
 if __name__ == '__main__':
