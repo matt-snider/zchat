@@ -10,7 +10,7 @@ class ZChatClient:
 
     def __init__(self):
         self.socket = context.socket(zmq.DEALER)
-        self.registry = CommandRegistry('client', self.socket)
+        self.registry = CommandRegistry(self, is_client=True)
 
     def run(self):
         print('Please enter a command...')

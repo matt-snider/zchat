@@ -4,11 +4,9 @@ from abc import ABC, abstractmethod
 class CommandRegistry:
     _commands = {}
 
-    def __init__(self, type, socket):
-        if type not in ('client', 'server'):
-            raise ValueError("type must be 'client' or 'server'")
-        self._client = type == 'client'
-        self._socket = socket
+    def __init__(self, owner, is_client=False):
+        self._client = is_client
+        self._owner = owner
 
     @classmethod
     def register(cls, cmd):
@@ -19,9 +17,9 @@ class CommandRegistry:
         try:
             command = self._commands[cmd_name.upper()]
             if self._client:
-                return command.execute_client(self._socket, *args)
+                return command.execute_client(self._owner, *args)
             else:
-                return command.execute_server(self._socket, *args)
+                return command.execute_server(self._owner, *args)
         except TypeError:
             raise InvalidArgument(*args)
         except KeyError:
@@ -42,12 +40,12 @@ class Command(ABC):
 
     @classmethod
     @abstractmethod
-    def execute_server(cls, socket, *args):
+    def execute_server(cls, server, *args):
         pass
 
     @classmethod
     @abstractmethod
-    def execute_client(cls, socket, *args):
+    def execute_client(cls, client, *args):
         pass
 
 
@@ -62,14 +60,14 @@ class Connect(Command):
     """
 
     @classmethod
-    def execute_client(cls, socket, host, nick):
-        socket.identity = nick.encode()
-        socket.connect('tcp://{}'.format(host))
-        socket.send(b'CONNECT')
-        welcome = socket.recv_string()
+    def execute_client(cls, client, host, nick):
+        client.socket.identity = nick.encode()
+        client.socket.connect('tcp://{}'.format(host))
+        client.socket.send(b'CONNECT')
+        welcome = client.socket.recv_string()
         print(welcome)
 
     @classmethod
-    def execute_server(cls, socket, nick):
+    def execute_server(cls, server, nick):
         print('%s connected' % nick)
-        socket.send_multipart([nick, 'Welcome!'])
+        server.socket.send_multipart([nick, 'Welcome!'])
