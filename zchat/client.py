@@ -7,6 +7,7 @@ context = zmq.Context()
 
 
 class ZChatClient:
+    prompt = '>>> '
 
     def __init__(self):
         self.socket = context.socket(zmq.DEALER)
@@ -16,7 +17,7 @@ class ZChatClient:
         print('Please enter a command...')
         while True:
             try:
-                self.registry.dispatch(input())
+                self.registry.dispatch(input(self.prompt))
             except InvalidCommand:
                 print("Invalid command -- type /help for more info")
             except InvalidArgument:

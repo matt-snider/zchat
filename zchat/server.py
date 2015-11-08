@@ -14,11 +14,10 @@ context = zmq.Context()
 
 class ZChatServer:
 
-    welcome = b"""Welcome to zchat server!
-
-    This is a welcome message that needs to be updated with something
-    more interesting. Hello world! Foo bar biz baz bam!
-    """
+    welcome = (b'Welcome to zchat server!\n\n'
+               b'This is a welcome message that needs to be updated with '
+               b'something more interesting. Hello world! Foo bar biz '
+               b'baz bam!')
 
     def __init__(self, port):
         self.socket = context.socket(zmq.ROUTER)
