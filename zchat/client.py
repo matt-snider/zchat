@@ -1,6 +1,7 @@
 import sys
 import zmq
 
+commands = set()
 
 def run_chat_client(user, hostname, port):
     context = zmq.Context()
@@ -17,8 +18,9 @@ def run_chat_client(user, hostname, port):
     print('Please enter a command...')
     try:
         while True:
-            cmd = input()
-            # parse and validate
+            cmd = parse_and_validate_command(input())
+            if not cmd:
+                continue
             socket.send(cmd.encode())
             response = socket.recv_multipart()
             print('Response: %s' % response)
@@ -26,6 +28,17 @@ def run_chat_client(user, hostname, port):
     except KeyboardInterrupt:
         exit('Exiting zchat...')
 
+
+def parse_and_validate_command(cmd):
+    if not cmd.startswith('/'):
+        print("Prefix commands with '/' -- type /help for more info")
+        return
+
+    cmd = cmd.strip('/')
+    if cmd not in commands:
+        print("Invalid command: '%s' -- type /help for a list of commands" % cmd)
+        return
+    return cmd
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
