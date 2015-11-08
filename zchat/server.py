@@ -21,19 +21,15 @@ class ZChatServer:
     def __init__(self, port):
         self.socket = context.socket(zmq.ROUTER)
         self.port = port
-        self.clients = []
+        self.registry = CommandRegistry('server', self.socket)
 
     def start(self):
         self.socket.bind('tcp://*:{}'.format(self.port))
         logger.info('Server started on port %s', self.port)
-
-        try:
-            while True:
-                user, cmd = self.socket.recv_multipart()
-                result = self.handle_command(user, cmd)
-                self.socket.send_multipart([user, result])
-        except KeyboardInterrupt:
-            exit('Closing server.')
+        while True:
+            user, cmd = self.socket.recv_multipart()
+            result = self.handle_command(user, cmd)
+            self.socket.send_multipart([user, result])
 
     def handle_command(self, user, cmd):
         logger.debug("User<%s> sent command: %s" % (user, cmd))
@@ -50,4 +46,7 @@ if __name__ == '__main__':
 
     logger.info('Starting zchat server...')
     server = ZChatServer(sys.argv[1])
-    server.start()
+    try:
+        server.start()
+    except KeyboardInterrupt:
+        exit('Closing server.')
