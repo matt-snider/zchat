@@ -14,9 +14,9 @@ class CommandRegistry:
         cls._commands[cmd.name] = cmd
 
     def dispatch(self, cmd_string, user=None):
-        cmd_string, trailing_arg = cmd_string.split(' :')
+        cmd_string, *trailing_arg = cmd_string.split(' :')
         cmd_name, *args = cmd_string.split()
-        args.append(trailing_arg)
+        args.extend(trailing_arg)
         try:
             command = self._commands[cmd_name.upper()]
             if self._client:
@@ -107,7 +107,7 @@ class Message(Command):
     Sends another user a private message.
 
     Usage:
-        /privmsg <user> <message>
+        /privmsg <user> :<message>
     """
     
     # TODO: this would be much better with ZMQStream and on_recv()/on_send()
@@ -116,7 +116,7 @@ class Message(Command):
         me = client.socket.identity.decode()
         print('<%s> %s' % (me, msg))
         while True:
-            client.socket.send(b'PRIVMSG ' + target.encode() + ' :' + msg.encode())
+            client.socket.send(b'PRIVMSG ' + target.encode() + b' :' + msg.encode())
             response = client.socket.recv_string()
             print('<%s> %s' % (target, response)) 
             msg = input('<%s> '  % me)
