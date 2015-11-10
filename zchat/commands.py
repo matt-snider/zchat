@@ -123,5 +123,5 @@ class Message(Command):
 
     @classmethod
     def execute_server(cls, server, user, target, msg):
-        server.socket.send_multipart([target, msg.encode()])
+        server.socket.send_multipart([target.encode(), msg.encode()])
 
