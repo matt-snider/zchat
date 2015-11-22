@@ -11,7 +11,7 @@ class CommandRegistry:
 
     @classmethod
     def register(cls, cmd):
-        cls._commands[cmd.name] = cmd
+        cls._commands[cmd.get_name()] = cmd
 
     def dispatch(self, cmd_string, user=None):
         cmd_string, *trailing_arg = cmd_string.split(' :')
@@ -38,15 +38,19 @@ class InvalidArgument(Exception):
 
 
 class Command(ABC):
-    name = ''
-    client_help = ''
 
     @classmethod
+    def get_help(self):
+        return self.__doc__
+
+    @classmethod
+    def get_name(self):
+        return self.get_help().split('\n', 1)[0].strip()
+
     @abstractmethod
     def execute_server(cls, server, user, *args):
         pass
 
-    @classmethod
     @abstractmethod
     def execute_client(cls, client, *args):
         pass
@@ -54,8 +58,8 @@ class Command(ABC):
 
 @CommandRegistry.register
 class Connect(Command):
-    name = 'CONNECT'
-    client_help = """CONNECT
+    """CONNECT
+
     Connects to the server with the chosen handle/nickname.
 
     Usage:
@@ -79,8 +83,8 @@ class Connect(Command):
 
 @CommandRegistry.register
 class Users(Command):
-    name = 'USERS'
-    client_help = """USERS
+    """USERS
+
     Lists the users on the current server
     
     Usage:
@@ -102,8 +106,8 @@ class Users(Command):
 
 @CommandRegistry.register
 class Message(Command):
-    name = 'PRIVMSG'
-    client_help = """"PRIVMSG
+    """PRIVMSG
+
     Sends another user a private message.
 
     Usage:
