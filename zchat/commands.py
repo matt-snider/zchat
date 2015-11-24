@@ -40,12 +40,12 @@ class InvalidArgument(Exception):
 class Command(ABC):
 
     @classmethod
-    def get_help(self):
-        return self.__doc__
+    def get_help(cls):
+        return cls.__doc__
 
     @classmethod
-    def get_name(self):
-        return self.get_help().split('\n', 1)[0].strip()
+    def get_name(cls):
+        return cls.get_help().split('\n', 1)[0].strip()
 
     @abstractmethod
     def execute_server(cls, server, user, *args):
