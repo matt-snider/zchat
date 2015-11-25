@@ -141,7 +141,7 @@ class Help(Command):
     """
 
     @classmethod
-    def execute_client(cls, command=None):
+    def execute_client(cls, user, command=None):
         if command:
             cls._print_command_help(command)
         else:
@@ -153,12 +153,12 @@ class Help(Command):
             command = CommandRegistry._commands[command.upper()]
             print(command.get_help())
         except KeyError:
-            print("'%s' is not a zchat command" % command)
+            print("'%s' is not a zchat command\n" % command)
             cls._print_command_list()
 
     @classmethod
     def _print_command_list(self):
-        print('Command list:')
+        print('Command list (/help <command> for more details):')
 
         for command_name in CommandRegistry._commands:
             print('\t%s' % command_name)
