@@ -129,3 +129,29 @@ class Message(Command):
     def execute_server(cls, server, user, target, msg):
         server.socket.send_multipart([target.encode(), msg.encode()])
 
+
+@CommandRegistry.register
+class Help(Command):
+
+    @classmethod
+    def execute_client(cls, command=None):
+        if command:
+            cls._print_command_help(command)
+        else:
+            cls._print_command_list()
+
+    @classmethod
+    def _print_command_help(cls, command):
+        try:
+            command = CommandRegistry._commands[command.upper()]
+            print(command.get_help())
+        except KeyError:
+            print("'%s' is not a zchat command" % command)
+            cls._print_command_list()
+
+    @classmethod
+    def _print_command_list(self):
+        print('Command list:')
+
+        for command_name in CommandRegistry._commands:
+            print('\t%s' % command_name)
