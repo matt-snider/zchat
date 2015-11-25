@@ -132,6 +132,13 @@ class Message(Command):
 
 @CommandRegistry.register
 class Help(Command):
+    """HELP
+
+    Displays a list of commands or info about a specific command.
+
+    Usage:
+        /help <command_name>
+    """
 
     @classmethod
     def execute_client(cls, command=None):
