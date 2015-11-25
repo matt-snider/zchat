@@ -28,6 +28,10 @@ class CommandRegistry:
         except KeyError:
             raise InvalidCommand(cmd_name)
 
+    @classmethod
+    def get_list(cls):
+        return sorted(cls._commands)
+
 
 class InvalidCommand(Exception):
     pass
@@ -157,8 +161,8 @@ class Help(Command):
             cls._print_command_list()
 
     @classmethod
-    def _print_command_list(self):
+    def _print_command_list(cls):
         print('Command list (/help <command> for more details):')
 
-        for command_name in CommandRegistry._commands:
+        for command_name in CommandRegistry.get_list():
             print('\t%s' % command_name)
