@@ -25,6 +25,7 @@ class CommandRegistry(ABC):
         cls._server_commands[cmd_name] = cmd.server
         cls._client_commands[cmd_name] = cmd.client
         cls._command_list.add(cmd_name)
+        return cmd
 
     def dispatch(self, cmd_string, user=None):
         cmd_string, *trailing_arg = cmd_string.split(' :')
