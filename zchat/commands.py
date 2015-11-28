@@ -153,9 +153,9 @@ class Help(Command):
 
     def client(self, command=None):
         if command:
-            self._print_command_help(command)
+            Help._print_command_help(command)
         else:
-            self._print_command_list()
+            Help._print_command_list()
 
     @classmethod
     def _print_command_help(cls, command):
