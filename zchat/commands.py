@@ -1,36 +1,49 @@
 import json
 from abc import ABC, abstractmethod
+from functools import partial
 
 
-class CommandRegistry:
-    _commands = {}
+class CommandRegistry(ABC):
+    _server_commands = {}
+    _client_commands = {}
+    _command_list = set()
 
-    def __init__(self, owner, is_client=False):
-        self._client = is_client
-        self._owner = owner
+    def __init__(self):
+        for name, command in self._commands.items():
+            self._commands[name] = partial(command, self)
+
+    @property
+    @abstractmethod
+    def _commands(self):
+        return []
 
     @classmethod
     def register(cls, cmd):
-        cls._commands[cmd.get_name()] = cmd
+        assert issubclass(cmd, Command), '%s is not command' % cmd
+
+        cmd_name = cmd.get_name()
+        cls._server_commands[cmd_name] = cmd.server
+        cls._client_commands[cmd_name] = cmd.client
+        cls._command_list.add(cmd_name)
 
     def dispatch(self, cmd_string, user=None):
         cmd_string, *trailing_arg = cmd_string.split(' :')
         cmd_name, *args = cmd_string.split()
         args.extend(trailing_arg)
+        if user:
+            args.insert(0, user)
+
         try:
             command = self._commands[cmd_name.upper()]
-            if self._client:
-                return command.execute_client(self._owner, *args)
-            else:
-                return command.execute_server(self._owner, user, *args)
-        except TypeError:
+            command(*args)
+        except TypeError as e:
             raise InvalidArgument(*args)
-        except KeyError:
+        except KeyError as e:
             raise InvalidCommand(cmd_name)
 
     @classmethod
     def get_list(cls):
-        return sorted(cls._commands)
+        return sorted(cls._command_list)
 
 
 class InvalidCommand(Exception):
