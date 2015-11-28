@@ -12,7 +12,7 @@ logger.setLevel(logging.DEBUG)
 context = zmq.Context()
 
 
-class ZChatServer:
+class ZChatServer(CommandRegistry):
 
     welcome = (b'Welcome to zchat server!\n\n'
                b'This is a welcome message that needs to be updated with '
@@ -20,10 +20,14 @@ class ZChatServer:
                b'baz bam!')
 
     def __init__(self, port):
+        super().__init__()
         self.socket = context.socket(zmq.ROUTER)
         self.port = port
-        self.registry = CommandRegistry(self)
         self.clients = []
+
+    @property
+    def _commands(self):
+        return self._server_commands
 
     def start(self):
         self.socket.bind('tcp://*:{}'.format(self.port))
@@ -31,7 +35,7 @@ class ZChatServer:
         while True:
             user, cmd = self.socket.recv_multipart()
             try:
-                self.registry.dispatch(cmd.decode(), user)
+                self.dispatch(cmd.decode(), user)
                 logger.debug('Server handled Client<%s> command: %s' % (user, cmd))
             except (InvalidCommand, InvalidArgument):
                 logger.debug('Client<%s> sent invalid command: %s' % (user, cmd))
