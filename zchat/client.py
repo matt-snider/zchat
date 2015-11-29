@@ -32,8 +32,9 @@ class ZChatClient(CommandRegistry):
         print('Please enter a command...')
         while True:
             try:
-                print(self.prompt, end='')
                 user_input = yield self.stdin.read_until(delimiter=b'\n')
+                if not user_input:
+                    continue
                 self.dispatch(user_input.decode())
             except InvalidCommand:
                 print("Invalid command -- type /help for more info")
