@@ -80,6 +80,7 @@ class Connect(Command):
         self.stream.send(b'CONNECT')
 
     def on_message(self, message):
+        message = message[0]
         self.print_server_response(message)
 
     def server(self, user):
@@ -102,6 +103,7 @@ class Users(Command):
         self.stream.send(b'USERS')
 
     def on_message(self, message):
+        message = message[0]
         users = json.loads(message)
         self.print_server_response('Users:\n\t%s' % '\n\t'.join(users))
 
@@ -121,18 +123,15 @@ class Message(Command):
         /privmsg <user> :<message>
     """
     
-    # TODO: this would be much better with ZMQStream and on_recv()/on_send()
     def client(self, target, msg):
-        me = self.stream.identity.decode()
-        print('<%s> %s' % (me, msg))
-        while True:
-            self.stream.send(b'PRIVMSG ' + target.encode() + b' :' + msg.encode())
-            response = self.stream.recv_string()
-            print('<%s> %s' % (target, response)) 
-            msg = input('<%s> ' % me)
+        me = self.socket.identity.decode()
+        self.stream.send(b'PRIVMSG ' + target.encode() + b' :' + msg.encode())
+
+    def on_message(self, message):
+        print('<{}> {}'.format(*message))
 
     def server(self, user, target, msg):
-        self.socket.send_multipart([target.encode(), b'PRIVMSG', msg.encode()])
+        self.socket.send_multipart([target.encode(), b'PRIVMSG', user, msg.encode()])
 
 
 @CommandRegistry.register

@@ -33,6 +33,7 @@ class ZChatClient(CommandRegistry):
         while True:
             try:
                 user_input = yield self.stdin.read_until(delimiter=b'\n')
+                user_input = user_input.strip()
                 if not user_input:
                     continue
                 self.dispatch(user_input.decode())
@@ -45,9 +46,9 @@ class ZChatClient(CommandRegistry):
         return command.client(self, *args)
 
     def on_message(self, message):
-        cmd_name, message = message
+        cmd_name, *message = message
         command = self._commands[cmd_name.decode().upper()]
-        command.on_message(self, message.decode())
+        command.on_message(self, [arg.decode() for arg in message])
 
     def print_server_response(self, response):
         width, _ = shutil.get_terminal_size()
