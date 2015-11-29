@@ -2,11 +2,14 @@ import shutil
 import textwrap
 
 import zmq
+from tornado import ioloop
+from zmq.eventloop import ioloop as zmq_ioloop
 from zmq.eventloop import zmqstream
 
 from zchat.commands import CommandRegistry, InvalidCommand, InvalidArgument
 
 context = zmq.Context()
+zmq_ioloop.install()
 
 
 class ZChatClient(CommandRegistry):
@@ -54,5 +57,6 @@ if __name__ == '__main__':
     client = ZChatClient()
     try:
         client.run()
+        ioloop.IOLoop.current().start()
     except KeyboardInterrupt:
         exit('Exiting zchat...')
