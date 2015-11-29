@@ -75,10 +75,10 @@ class Connect(Command):
     """
 
     def client(self, host, nick):
-        self.socket.identity = nick.encode()
-        self.socket.connect('tcp://{}'.format(host))
-        self.socket.send(b'CONNECT')
-        welcome = self.socket.recv_string()
+        self.stream.identity = nick.encode()
+        self.stream.connect('tcp://{}'.format(host))
+        self.stream.send(b'CONNECT')
+        welcome = self.stream.recv_string()
         self.print_server_response(welcome)
 
     def server(self, user):
@@ -98,8 +98,8 @@ class Users(Command):
     """
 
     def client(self):
-        self.socket.send(b'USERS')
-        users = self.socket.recv_json()
+        self.stream.send(b'USERS')
+        users = self.stream.recv_json()
         self.print_server_response('Users:\n\t%s' % '\n\t'.join(users))
 
     def server(self, user):
@@ -120,13 +120,13 @@ class Message(Command):
     
     # TODO: this would be much better with ZMQStream and on_recv()/on_send()
     def client(self, target, msg):
-        me = self.socket.identity.decode()
+        me = self.stream.identity.decode()
         print('<%s> %s' % (me, msg))
         while True:
-            self.socket.send(b'PRIVMSG ' + target.encode() + b' :' + msg.encode())
-            response = self.socket.recv_string()
+            self.stream.send(b'PRIVMSG ' + target.encode() + b' :' + msg.encode())
+            response = self.stream.recv_string()
             print('<%s> %s' % (target, response)) 
-            msg = input('<%s> '  % me)
+            msg = input('<%s> ' % me)
 
     def server(self, user, target, msg):
         self.socket.send_multipart([target.encode(), msg.encode()])

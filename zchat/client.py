@@ -2,6 +2,7 @@ import shutil
 import textwrap
 
 import zmq
+from zmq.eventloop import zmqstream
 
 from zchat.commands import CommandRegistry, InvalidCommand, InvalidArgument
 
@@ -15,6 +16,7 @@ class ZChatClient(CommandRegistry):
     def __init__(self):
         super().__init__()
         self.socket = context.socket(zmq.DEALER)
+        self.stream = zmqstream.ZMQStream(self.socket)
         self._wrapper = textwrap.TextWrapper(replace_whitespace=False,
                                              initial_indent=self.resp_prefix,
                                              subsequent_indent=self.resp_prefix)
