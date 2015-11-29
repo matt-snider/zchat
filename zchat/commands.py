@@ -75,7 +75,7 @@ class Connect(Command):
     """
 
     def client(self, host, nick):
-        self.stream.identity = nick.encode()
+        self.socket.identity = nick.encode()
         self.stream.connect('tcp://{}'.format(host))
         self.stream.send(b'CONNECT')
 
@@ -85,7 +85,7 @@ class Connect(Command):
 
     def server(self, user):
         print('%s connected' % user)
-        self.socket.send_multipart([user, self.welcome])
+        self.socket.send_multipart([user, b'CONNECT', self.welcome])
         self.clients.append(user.decode())
 
 
@@ -109,7 +109,7 @@ class Users(Command):
     def server(self, user):
         # this wont work without addr!
         user_list = json.dumps(self.clients).encode()
-        self.socket.send_multipart([user, user_list])
+        self.socket.send_multipart([user, b'USERS', user_list])
 
 
 @CommandRegistry.register
@@ -133,7 +133,7 @@ class Message(Command):
             msg = input('<%s> ' % me)
 
     def server(self, user, target, msg):
-        self.socket.send_multipart([target.encode(), msg.encode()])
+        self.socket.send_multipart([target.encode(), b'PRIVMSG', msg.encode()])
 
 
 @CommandRegistry.register
