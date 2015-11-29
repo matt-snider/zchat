@@ -1,30 +1,16 @@
 import json
 from abc import ABC, abstractmethod
-from functools import partial
 
 
 class CommandRegistry(ABC):
-    _server_commands = {}
-    _client_commands = {}
-    _command_list = set()
-
-    def __init__(self):
-        for name, command in self._commands.items():
-            self._commands[name] = partial(command, self)
-
-    @property
-    @abstractmethod
-    def _commands(self):
-        return []
+    _commands = {}
 
     @classmethod
     def register(cls, cmd):
         assert issubclass(cmd, Command), '%s is not command' % cmd
 
         cmd_name = cmd.get_name()
-        cls._server_commands[cmd_name] = cmd.server
-        cls._client_commands[cmd_name] = cmd.client
-        cls._command_list.add(cmd_name)
+        cls._commands[cmd_name] = cmd
         return cmd
 
     def dispatch(self, cmd_string, user=None):
@@ -36,15 +22,19 @@ class CommandRegistry(ABC):
 
         try:
             command = self._commands[cmd_name.upper()]
-            command(*args)
+            self.execute_command(command, *args)
         except TypeError as e:
             raise InvalidArgument(*args)
         except KeyError as e:
             raise InvalidCommand(cmd_name)
 
+    @abstractmethod
+    def execute_command(self, command, *args):
+        pass
+
     @classmethod
     def get_list(cls):
-        return sorted(cls._command_list)
+        return sorted(cls._commands)
 
 
 class InvalidCommand(Exception):

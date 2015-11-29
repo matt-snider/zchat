@@ -25,10 +25,6 @@ class ZChatServer(CommandRegistry):
         self.port = port
         self.clients = []
 
-    @property
-    def _commands(self):
-        return self._server_commands
-
     def start(self):
         self.socket.bind('tcp://*:{}'.format(self.port))
         logger.info('Server started on port %s', self.port)
@@ -39,6 +35,9 @@ class ZChatServer(CommandRegistry):
                 logger.debug('Server handled Client<%s> command: %s' % (user, cmd))
             except (InvalidCommand, InvalidArgument):
                 logger.debug('Client<%s> sent invalid command: %s' % (user, cmd))
+
+    def execute_command(self, command, *args):
+        return command.server(self, *args)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:

@@ -19,10 +19,6 @@ class ZChatClient(CommandRegistry):
                                              initial_indent=self.resp_prefix,
                                              subsequent_indent=self.resp_prefix)
 
-    @property
-    def _commands(self):
-        return self._client_commands
-
     def run(self):
         print('Please enter a command...')
         while True:
@@ -32,6 +28,9 @@ class ZChatClient(CommandRegistry):
                 print("Invalid command -- type /help for more info")
             except InvalidArgument:
                 print('Invalid arguments to command')
+
+    def execute_command(self, command, *args):
+        return command.client(self, *args)
 
     def print_server_response(self, response):
         width, _ = shutil.get_terminal_size()
