@@ -45,8 +45,8 @@ class ZChatClient(CommandRegistry):
 
     def on_message(self, message):
         cmd_name, message = message
-        command = self._commands[cmd_name]
-        command.on_message(self, message)
+        command = self._commands[cmd_name.decode().upper()]
+        command.on_message(self, message.decode())
 
     def print_server_response(self, response):
         width, _ = shutil.get_terminal_size()

@@ -79,9 +79,8 @@ class Connect(Command):
         self.stream.connect('tcp://{}'.format(host))
         self.stream.send(b'CONNECT')
 
-    def on_receive(self, stream, message):
-        welcome = message[0].decode()
-        self.print_server_response(welcome)
+    def on_message(self, message):
+        self.print_server_response(message)
 
     def server(self, user):
         print('%s connected' % user)
@@ -102,8 +101,8 @@ class Users(Command):
     def client(self):
         self.stream.send(b'USERS')
 
-    def on_receive(self, message):
-        users = json.loads(message[0])
+    def on_message(self, message):
+        users = json.loads(message)
         self.print_server_response('Users:\n\t%s' % '\n\t'.join(users))
 
     def server(self, user):
