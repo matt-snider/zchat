@@ -78,12 +78,10 @@ class Connect(Command):
         self.stream.identity = nick.encode()
         self.stream.connect('tcp://{}'.format(host))
         self.stream.send(b'CONNECT')
-        self.stream.on_recv(self._on_receive)
 
-    def _on_receive(self, message):
+    def on_receive(self, stream, message):
         welcome = message[0].decode()
         self.print_server_response(welcome)
-        self.stream.stop_on_recv()
 
     def server(self, user):
         print('%s connected' % user)
@@ -103,12 +101,10 @@ class Users(Command):
 
     def client(self):
         self.stream.send(b'USERS')
-        self.stream.on_recv(self._on_receive)
 
-    def _on_receive(self, message):
+    def on_receive(self, message):
         users = json.loads(message[0])
         self.print_server_response('Users:\n\t%s' % '\n\t'.join(users))
-        self.stream.stop_on_recv()
 
     def server(self, user):
         # this wont work without addr!

@@ -17,6 +17,7 @@ class ZChatClient(CommandRegistry):
         super().__init__()
         self.socket = context.socket(zmq.DEALER)
         self.stream = zmqstream.ZMQStream(self.socket)
+        self.stream.on_recv(self.on_message)
         self._wrapper = textwrap.TextWrapper(replace_whitespace=False,
                                              initial_indent=self.resp_prefix,
                                              subsequent_indent=self.resp_prefix)
@@ -33,6 +34,11 @@ class ZChatClient(CommandRegistry):
 
     def execute_command(self, command, *args):
         return command.client(self, *args)
+
+    def on_message(self, message):
+        cmd_name, message = message
+        command = self._commands[cmd_name]
+        command.on_message(self, message)
 
     def print_server_response(self, response):
         width, _ = shutil.get_terminal_size()
