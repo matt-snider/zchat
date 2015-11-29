@@ -1,8 +1,9 @@
+import sys
 import shutil
 import textwrap
 
 import zmq
-from tornado import ioloop
+from tornado import gen, ioloop, iostream
 from zmq.eventloop import ioloop as zmq_ioloop
 from zmq.eventloop import zmqstream
 
@@ -21,15 +22,19 @@ class ZChatClient(CommandRegistry):
         self.socket = context.socket(zmq.DEALER)
         self.stream = zmqstream.ZMQStream(self.socket)
         self.stream.on_recv(self.on_message)
+        self.stdin = iostream.PipeIOStream(sys.stdin.fileno())
         self._wrapper = textwrap.TextWrapper(replace_whitespace=False,
                                              initial_indent=self.resp_prefix,
                                              subsequent_indent=self.resp_prefix)
 
+    @gen.coroutine
     def run(self):
         print('Please enter a command...')
         while True:
             try:
-                self.dispatch(input(self.prompt))
+                print(self.prompt, end='')
+                user_input = yield self.stdin.read_until(delimiter=b'\n')
+                self.dispatch(user_input.decode())
             except InvalidCommand:
                 print("Invalid command -- type /help for more info")
             except InvalidArgument:
@@ -56,7 +61,6 @@ class ZChatClient(CommandRegistry):
 if __name__ == '__main__':
     client = ZChatClient()
     try:
-        client.run()
-        ioloop.IOLoop.current().start()
+        ioloop.IOLoop.current().run_sync(client.run)
     except KeyboardInterrupt:
         exit('Exiting zchat...')
