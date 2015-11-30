@@ -32,6 +32,7 @@ class ZChatClient(CommandRegistry):
         print('Please enter a command...')
         while True:
             try:
+                print(self.prompt, end='', flush=True)
                 user_input = yield self.stdin.read_until(delimiter=b'\n')
                 user_input = user_input.strip()
                 if not user_input:
