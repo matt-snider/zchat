@@ -52,6 +52,7 @@ class ZChatClient(CommandRegistry):
         command.on_message(self, [arg.decode() for arg in message])
 
     def print_server_response(self, response):
+        print('\r', end='')
         width, _ = shutil.get_terminal_size()
         self._wrapper.width = width - len(self.resp_prefix)
         for line in response.splitlines():
@@ -59,6 +60,7 @@ class ZChatClient(CommandRegistry):
                 print(self.resp_prefix)
             else:
                 print(self._wrapper.fill(line))
+        print(self.prompt, end='', flush=True)
 
 
 if __name__ == '__main__':
