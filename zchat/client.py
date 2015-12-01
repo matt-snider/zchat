@@ -22,7 +22,7 @@ class ZChatClient(CommandRegistry):
         self.socket = context.socket(zmq.DEALER)
         self.stream = zmqstream.ZMQStream(self.socket)
         self.stream.on_recv(self.on_message)
-        self.stdin = iostream.PipeIOStream(sys.stdin.fileno())
+        self._stdin = iostream.PipeIOStream(sys.stdin.fileno())
         self._wrapper = textwrap.TextWrapper(replace_whitespace=False,
                                              initial_indent=self.resp_prefix,
                                              subsequent_indent=self.resp_prefix)
@@ -33,15 +33,19 @@ class ZChatClient(CommandRegistry):
         while True:
             try:
                 print(self.prompt, end='', flush=True)
-                user_input = yield self.stdin.read_until(delimiter=b'\n')
-                user_input = user_input.strip()
+                user_input = yield self.async_input()
                 if not user_input:
                     continue
-                self.dispatch(user_input.decode())
+                self.dispatch(user_input)
             except InvalidCommand:
                 print("Invalid command -- type /help for more info")
             except InvalidArgument:
                 print('Invalid arguments to command')
+
+    @gen.coroutine
+    def async_input(self):
+        input = yield self._stdin.read_until(delimiter=b'\n')
+        return input.strip().decode()
 
     def execute_command(self, command, *args):
         return command.client(self, *args)
