@@ -124,7 +124,6 @@ class Message(Command):
     """
     
     def client(self, target, msg):
-        me = self.socket.identity.decode()
         self.stream.send(b'PRIVMSG ' + target.encode() + b' :' + msg.encode())
 
     def on_message(self, message):
