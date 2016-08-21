@@ -76,8 +76,8 @@ class Connect(Command):
 
     def client(self, host, nick):
         self.socket.identity = nick.encode()
-        self.stream.connect('tcp://{}'.format(host))
-        self.stream.send(b'CONNECT')
+        self.socket.connect('tcp://{}'.format(host))
+        self.socket.send(b'CONNECT')
 
     def on_message(self, message):
         message = message[0]
@@ -100,7 +100,7 @@ class Users(Command):
     """
 
     def client(self):
-        self.stream.send(b'USERS')
+        self.socket.send(b'USERS')
 
     def on_message(self, message):
         message = message[0]
@@ -124,7 +124,7 @@ class Message(Command):
     """
     
     def client(self, target, msg):
-        self.stream.send(b'PRIVMSG ' + target.encode() + b' :' + msg.encode())
+        self.socket.send(b'PRIVMSG ' + target.encode() + b' :' + msg.encode())
 
     def on_message(self, message):
         print('<{}> {}'.format(*message))

@@ -1,2 +1,2 @@
-tornado=4.2.1
-pyzmq=15.0.0
+pyzmq==15.4
+
