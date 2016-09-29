@@ -24,6 +24,18 @@ class ZChatClient(CommandRegistry):
                                              subsequent_indent=self.resp_prefix)
 
     @asyncio.coroutine
+    def run_command(self, command):
+        try:
+            self.dispatch(command)
+            cmd_name, *message = yield from self.socket.recv_multipart()
+            command = self._commands[cmd_name.decode().upper()]
+            return command.on_message(self, [arg.decode() for arg in message])
+        except InvalidCommand:
+            return "Invalid command -- type /help for more info"
+        except InvalidArgument:
+            return 'Invalid arguments to command'
+
+    @asyncio.coroutine
     def run(self):
         print('Please enter a command...')
         while True:
