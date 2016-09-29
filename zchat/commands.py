@@ -80,8 +80,7 @@ class Connect(Command):
         self.socket.send(b'CONNECT')
 
     def on_message(self, message):
-        message = message[0]
-        self.print_server_response(message)
+        return message[0]
 
     def server(self, user):
         print('%s connected' % user)
@@ -105,7 +104,7 @@ class Users(Command):
     def on_message(self, message):
         message = message[0]
         users = json.loads(message)
-        self.print_server_response('Users:\n\t%s' % '\n\t'.join(users))
+        return 'Users:\n\t%s' % '\n\t'.join(users)
 
     def server(self, user):
         # this wont work without addr!
@@ -127,7 +126,7 @@ class Message(Command):
         self.socket.send(b'PRIVMSG ' + target.encode() + b' :' + msg.encode())
 
     def on_message(self, message):
-        print('<{}> {}'.format(*message))
+        return '<{}> {}'.format(*message)
 
     def server(self, user, target, msg):
         self.socket.send_multipart([target.encode(), b'PRIVMSG', user, msg.encode()])
