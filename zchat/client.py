@@ -77,9 +77,17 @@ class ZChatClient(CommandRegistry):
 
 
 if __name__ == '__main__':
+    import urwid
+    from .widget import CLI
+
     client = ZChatClient()
+    urwid_loop = urwid.MainLoop(
+        CLI(client, loop=loop),
+        event_loop=urwid.AsyncioEventLoop(loop=loop),
+        palette=[('prompt', 'default,bold', 'default')]
+    )
+
     try:
-        input('hi')
-        loop.run_until_complete(asyncio.gather(client.run(), client.receive()))
+        urwid_loop.run()
     except KeyboardInterrupt:
         exit('Exiting zchat...')
