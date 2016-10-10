@@ -36,9 +36,10 @@ class CLI(urwid.ListBox):
         f = asyncio.ensure_future(self.execute_command(cmd))
         f.add_done_callback(self.on_message)
 
-    def print(self, msg):
+    def print(self, msg, increment=True):
         self.focus.contents[1:] = [(response(msg), self.focus.options())]
-        self.focus_position += 1
+        if increment:
+            self.focus_position += 1
 
     def on_message(self, f):
         result = f.result()
@@ -67,8 +68,8 @@ class CLI(urwid.ListBox):
             except KeyError:
                 self.print('Invalid command')
         else:
-            self.print('Available commands:')
+            message = 'Available commands:\n'
             for cmd_name, cmd in self.commands.items():
-                self.print('\t{} - {}'.format(cmd_name.upper(),
-                                              cmd.__doc__.splitlines()[0]))
-
+                message += '\n  {} - {}'.format(cmd_name.upper(),
+                                                cmd.__doc__.splitlines()[0])
+            self.print(message)
