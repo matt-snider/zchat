@@ -10,28 +10,44 @@ loop = zmq.asyncio.ZMQEventLoop()
 asyncio.set_event_loop(loop)
 
 
-class ZChatClient(CommandRegistry):
-    prompt = '>>> '
-    resp_prefix = '* '
+class ZChatClient:
 
     def __init__(self):
         super().__init__()
         self.socket = ctx.socket(zmq.DEALER)
 
     @asyncio.coroutine
-    def run_command(self, command):
-        try:
-            self.dispatch(command)
-            cmd_name, *message = yield from self.socket.recv_multipart()
-            command = self._commands[cmd_name.decode().upper()]
-            return command.on_message(self, [arg.decode() for arg in message])
-        except InvalidCommand:
-            return "Invalid command -- type /help for more info"
-        except InvalidArgument:
-            return 'Invalid arguments to command'
+    def connect(self, host, nick):
+        """Connects to the server with the chosen handle/nickname
 
-    def execute_command(self, command, *args):
-        return command.client(self, *args)
+        Usage:
+            /connect <host> <nick>
+        """
+        self.socket.identity = nick.encode()
+        self.socket.connect('tcp://{}'.format(host))
+        yield from self.socket.send(b'CONNECT')
+        return (yield from self.socket.recv_multipart())
+
+    @asyncio.coroutine
+    def users(self):
+        """Lists the users on the current server
+
+        Usage:
+            /users
+        """
+        yield from self.socket.send(b'USERS')
+        return (yield from self.socket.recv_multipart())
+
+    @asyncio.coroutine
+    def message(self, target, msg):
+        """Sends another user a private message
+
+        Usage:
+            /privmsg <user> :<message>
+        """
+        msg = b'PRIVMSG ' + target.encode() + b' :' + msg.encode()
+        yield from self.socket.send(msg)
+        return (yield from self.socket.recv_multipart())
 
 
 if __name__ == '__main__':

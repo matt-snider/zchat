@@ -16,6 +16,12 @@ class CLI(urwid.ListBox):
         self.zchat_client = zchat_client
         self.loop = loop
         body = urwid.SimpleFocusListWalker([prompt()])
+        self.commands = {
+            'help': self.help,
+            'connect': self.zchat_client.connect,
+            'privmsg': self.zchat_client.message,
+            'users': self.zchat_client.users,
+        }
         super().__init__(body)
 
     def keypress(self, size, key):
@@ -27,11 +33,45 @@ class CLI(urwid.ListBox):
             raise urwid.ExitMainLoop()
 
         self.body.insert(self.focus_position + 1, prompt())
-        f = asyncio.ensure_future(self.zchat_client.run_command(cmd))
+        f = asyncio.ensure_future(self.execute_command(cmd))
         f.add_done_callback(self.on_message)
 
-    def on_message(self, f):
-        msg = f.result()
+    def print(self, msg):
         self.focus.contents[1:] = [(response(msg), self.focus.options())]
         self.focus_position += 1
+
+    def on_message(self, f):
+        result = f.result()
+        if result:
+            msg = ''.join(x.decode() for x in result)
+            self.print(msg)
+
+    @asyncio.coroutine
+    def execute_command(self, cmd):
+        cmd_name, *args = cmd.split()
+        try:
+            func = self.commands[cmd_name.lower()]
+            if asyncio.iscoroutine(func):
+                return (yield from func(*args))
+            else:
+                func(*args)
+        except KeyError:
+            self.print('Invalid command. Type /help for a list of commands')
+
+    def help(self, cmd=None):
+        """Lists available commands or displays help about specific commands
+
+        Usage:
+            /help [<cmd>]
+        """
+        if cmd:
+            try:
+                self.print(self.commands[cmd].__doc__)
+            except KeyError:
+                self.print('Invalid command')
+        else:
+            self.print('Available commands:')
+            for cmd_name, cmd in self.commands.items():
+                self.print('\t{} - {}'.format(cmd_name.upper(),
+                                              cmd.__doc__.splitlines()[0]))
 
