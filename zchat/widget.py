@@ -50,12 +50,11 @@ class CLI(urwid.ListBox):
     def execute_command(self, cmd):
         cmd_name, *args = cmd.split()
         try:
-            coro = self.commands[cmd_name.lower()](*args)
-            if asyncio.iscoroutine(coro):
-                return (yield from coro)
+            return (yield from self.commands[cmd_name.lower()](*args))
         except KeyError:
             self.print('Invalid command. Type /help for a list of commands')
 
+    @asyncio.coroutine
     def help(self, cmd=None):
         """Lists available commands or displays help about specific commands
 
