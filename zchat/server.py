@@ -23,7 +23,7 @@ class ZChatServer(CommandRegistry):
         super().__init__()
         self.socket = context.socket(zmq.ROUTER)
         self.port = port
-        self.clients = []
+        self.clients = set()
 
     def start(self):
         self.socket.bind('tcp://*:{}'.format(self.port))

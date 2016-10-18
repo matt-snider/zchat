@@ -85,7 +85,7 @@ class Connect(Command):
     def server(self, user):
         print('%s connected' % user)
         self.socket.send_multipart([user, b'CONNECT', self.welcome])
-        self.clients.append(user.decode())
+        self.clients.add(user.decode())
 
 
 @CommandRegistry.register
@@ -108,7 +108,7 @@ class Users(Command):
 
     def server(self, user):
         # this wont work without addr!
-        user_list = json.dumps(self.clients).encode()
+        user_list = json.dumps(list(self.clients)).encode()
         self.socket.send_multipart([user, b'USERS', user_list])
 
 
