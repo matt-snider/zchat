@@ -28,7 +28,7 @@ class CLI(urwid.ListBox):
         key = super().keypress(size, key)
         if key != 'enter':
             return key
-        cmd = self.focus[0].edit_text
+        cmd = self.focus[0].edit_text.strip()
         if cmd == 'quit':
             raise urwid.ExitMainLoop()
         else:
