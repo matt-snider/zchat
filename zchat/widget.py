@@ -29,23 +29,25 @@ class CLI(urwid.ListBox):
         if key != 'enter':
             return key
         cmd = self.focus[0].edit_text
-        if not cmd:
+        if cmd == 'quit':
             raise urwid.ExitMainLoop()
-
-        self.body.insert(self.focus_position + 1, prompt())
-        f = asyncio.ensure_future(self.execute_command(cmd))
-        f.add_done_callback(self.on_message)
-
-    def print(self, msg, increment=True):
-        self.focus.contents[1:] = [(response(msg), self.focus.options())]
-        if increment:
+        else:
+            self.body.insert(self.focus_position + 1, prompt())
             self.focus_position += 1
+            if cmd:
+                f = asyncio.ensure_future(self.execute_command(cmd))
+                f.add_done_callback(self.on_message)
+
+    def print(self, msg):
+        self.focus.contents[1:] = [(response(msg), self.focus.options())]
 
     def on_message(self, f):
         result = f.result()
         if result:
             msg = ''.join(x.decode() for x in result)
             self.print(msg)
+            self.body.insert(self.focus_position + 1, prompt())
+            self.focus_position += 1
 
     @asyncio.coroutine
     def execute_command(self, cmd):
