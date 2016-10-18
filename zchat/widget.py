@@ -52,6 +52,9 @@ class CLI(urwid.ListBox):
         cmd_name, *args = cmd.split()
         try:
             return (yield from self.commands[cmd_name.lower()](*args))
+        except TypeError:
+            self.print('Missing arguments. Type /help {} for more info'
+                       .format(cmd_name))
         except KeyError:
             self.print('Invalid command. Type /help for a list of commands')
 
